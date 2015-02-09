@@ -85,7 +85,7 @@ public class Main {
 		initFiles();
 		frame = new JFrame();
 		frame.setTitle(Messages.getString("Main.frmAudienceResponseSystem.title")); //$NON-NLS-1$
-		frame.setBounds(200, 100, 300, 500);
+		frame.setBounds(200, 100, 300, 470);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		final JPanel panel = new JPanel();
@@ -461,7 +461,7 @@ public class Main {
 
 		JButton btnStart = new LocButton("Main.btnStart.text"); //$NON-NLS-1$
 		btnStart.addActionListener(al);
-		btnStart.setBounds(35, y_offset + 250, 89, 23);
+		btnStart.setBounds(35+5, y_offset + 250, 89, 23);
 		panel.add(btnStart);
 
 		btnStop = new LocButton("Main.btnStop.text"); //$NON-NLS-1$
@@ -474,11 +474,11 @@ public class Main {
 				
 			}
 		});
-		btnStop.setBounds(150, y_offset + 250, 89, 23);
+		btnStop.setBounds(150+5, y_offset + 250, 89, 23);
 		panel.add(btnStop);
 
 		JButton btnResend = new LocButton("Main.btnResend.text"); //$NON-NLS-1$
-		btnResend.setBounds(85, y_offset + 290, 100, 25);
+		btnResend.setBounds(85+5, y_offset + 290, 100, 25);
 		btnResend.addActionListener(al1);
 		panel.add(btnResend);
 
@@ -492,7 +492,7 @@ public class Main {
                 statusLabel.setFont(new Font("Tahoma", 2, 12));
                 statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
                 //statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
-		statusLabel.setBounds(30, y_offset + 360, 260, 30);
+		statusLabel.setBounds(30+5, y_offset + 360, 260, 30);
 		panel.add(statusLabel);
 
 		JMenuBar menuBar = new JMenuBar();
