@@ -5,6 +5,7 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.Box;
 import javax.swing.JFileChooser;
@@ -279,8 +280,10 @@ public class Main {
 		JLabel lblInputControl = new LocLabel("Main.lblInputControl.text"); //$NON-NLS-1$
 		lblInputControl.setFont(new Font("Tahoma", Font.BOLD, 14));
 		lblInputControl.setBounds(30, y_offset + 210, 154, 30);
-		panel.add(lblInputControl);
+		//panel.add(lblInputControl);
 
+                y_offset = y_offset - 30;
+                
 		ActionListener al = new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (arg0.getActionCommand().equals("TimerCommand")) {
@@ -525,11 +528,22 @@ public class Main {
 		JMenu mnAbout = new LocMenu("Main.mnAbout.text"); //$NON-NLS-1$
 		menuBar.add(mnAbout);
 
-		JMenuItem mntmNewMenuItem = new LocMenuItem("Main.mntmNewMenuItem.text"); //$NON-NLS-1$
-		mntmNewMenuItem.addActionListener(new ActionListener() {
+		JMenuItem mntmNewMenuItem = new LocMenuItem(Messages.getString("Main.mntmNewMenuItem.text")); //$NON-NLS-1$
+                mntmNewMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new About();
-			}
+				//new About();
+                            
+                                JPanel p = new JPanel(new java.awt.GridLayout(0, 1));
+                                JLabel about_content = new JLabel();
+                                about_content.setText(Messages.getString("Main.mnAbout.content"));
+                                p.add(about_content);
+                                
+                                JFrame about_window = new About();
+                                about_window.setSize(470,430);
+                                //about_window.getContentPane().setBackground(Color.DARK_GRAY);
+                                about_window.setTitle(Messages.getString("Main.mntmNewMenuItem.text"));
+                                about_window.setContentPane(p);
+                        }
 		});
 		mnAbout.add(mntmNewMenuItem);
 	}
