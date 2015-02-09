@@ -287,15 +287,15 @@ public class Main {
 		ActionListener al = new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (arg0.getActionCommand().equals("TimerCommand")) {
-					statusLabel.setText(Messages.getString("Main.statusLabel1")
-							+ " " + broj + " "
-							+ Messages.getString("Main.statusLabel2"));
+					
+                                        String labela = Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2");
+                                        statusLabel.setText(labela);
 					broj--;
 					if (broj == 0) {
 						timer.stop();
 						broj = 10;
-						statusLabel.setText(Messages
-								.getString("Main.statusLabel3"));
+						statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
+                                                //statusLabel.setText(Messages.getString("Main.statusLabel3"));
 						urlThread.start();
 					}
 					return;
@@ -360,8 +360,7 @@ public class Main {
 					timer.start();
 					timer.setActionCommand("TimerCommand");
 				} catch (MalformedURLException e2) {
-					JOptionPane.showMessageDialog(null,
-							Messages.getString("Main.urlError"));
+					JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
 				}
 			}
 		};
@@ -471,8 +470,8 @@ public class Main {
 				UrlHandler.setGotovo();
 				if (timer.isRunning())
 					timer.stop();
-				statusLabel.setText(Messages
-						.getString("Main.lblToInitiate.text"));
+                                statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
+				
 			}
 		});
 		btnStop.setBounds(150, y_offset + 250, 89, 23);
@@ -487,9 +486,12 @@ public class Main {
 		separator_2.setBounds(10, y_offset + 340, 260, 2);
 		panel.add(separator_2);
 
-		statusLabel = new JLabel(); //$NON-NLS-1$
+		//JLabel statusLabel = new LocLabel(Messages.getString("Main.lblToInitiate.text")); //$NON-NLS-1$
+                statusLabel = new JLabel(Messages.getString("Main.lblToInitiate.text")); //$NON-NLS-1$
+                //statusLabel = new JLabel(Messages.getString("Main.lblToInitiate.text")); //$NON-NLS-1$
                 statusLabel.setFont(new Font("Tahoma", 2, 12));
                 statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
+                //statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
 		statusLabel.setBounds(30, y_offset + 360, 260, 30);
 		panel.add(statusLabel);
 
@@ -507,6 +509,8 @@ public class Main {
 				Locale.setDefault(new Locale("hr", "HR"));
 				Messages.changeBundle();
 				Messages.fire();
+                                // Ovo ne bi trebalo ic tu ali iz nekog razloga mora;
+                                statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
 			}
 		});
 		buttonGroup.add(rdbtnmntmCroatian);
@@ -519,6 +523,8 @@ public class Main {
 				Locale.setDefault(new Locale("en", "US"));
 				Messages.changeBundle();
 				Messages.fire();
+                                // Ovo ne bi trebalo ic tu ali iz nekog razloga mora;
+                                statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
 			}
 		});
 		rdbtnmntmEnglish.setSelected(true);
@@ -535,11 +541,13 @@ public class Main {
                             
                                 JPanel p = new JPanel(new java.awt.GridLayout(0, 1));
                                 JLabel about_content = new JLabel();
+                                p.setSize(470, 430);
+                                about_content.setBounds(10, 10, 450, 410);
                                 about_content.setText(Messages.getString("Main.mnAbout.content"));
                                 p.add(about_content);
                                 
                                 JFrame about_window = new About();
-                                about_window.setSize(470,430);
+                                about_window.setSize(470,480);
                                 //about_window.getContentPane().setBackground(Color.DARK_GRAY);
                                 about_window.setTitle(Messages.getString("Main.mntmNewMenuItem.text"));
                                 about_window.setContentPane(p);
