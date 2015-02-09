@@ -32,6 +32,10 @@ import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -117,19 +121,7 @@ public class Main {
                 roomField.setColumns(5);
 		panel.add(roomField);
 		
-                
-		/*final JRadioButton defDomain = new JRadioButton(Messages.getString("Main.rdbtnHttpwwwauressorg.text")); //$NON-NLS-1$
-		defDomain.setBounds(35, 48, 158, 23);
-		buttonGroup_1.add(defDomain);
-		panel.add(defDomain);*/
-
-		/*JRadioButton cusDomain = new JRadioButton("");
-		buttonGroup_1.add(cusDomain);
-		cusDomain.setBounds(35, 74, 21, 21);
-		panel.add(cusDomain);*/
-
-
-		Scanner s;
+                Scanner s;
 		try {
 			s = new Scanner(Paths.get("settings.txt"));
                         String domena = "";
@@ -163,8 +155,10 @@ public class Main {
 		label.setBounds(30, 110, 118, 20);
 		panel.add(label);
                 
-                String[] output = new String[] { "Plain text", "Custom config file ...", "New config file ..."};
-                final JComboBox<String> comboOutput = new JComboBox<String>(output);
+                final JComboBox<String> comboOutput = new JComboBox<String>();
+                comboOutput.addItem(Messages.getString("Main.btnPlainText.text"));
+                comboOutput.addItem(Messages.getString("Main.btnFindConfigFile.text"));
+                comboOutput.addItem(Messages.getString("Main.btnNewButton.text"));
                 comboOutput.setBounds(30, 150, 118, 20);
                 panel.add(comboOutput);
                 
@@ -173,8 +167,9 @@ public class Main {
                     public void actionPerformed(ActionEvent event) {
                         JComboBox<String> combo = (JComboBox<String>) event.getSource();
                         String selectedOutput = (String) combo.getSelectedItem();
- 
-                        if (selectedOutput.equals("Custom config file ...")) {
+                        
+                        //ItemCount provjeravam jer je on jednak nuli u trenutku kad resetiram Iteme i pozove se action listener
+                        if ((comboOutput.getItemCount()>0) && (selectedOutput.equals(Messages.getString("Main.btnFindConfigFile.text")))) {
                               final JFileChooser fc = new JFileChooser();
 				int returnVal = fc.showOpenDialog(frame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -195,11 +190,11 @@ public class Main {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					};}
-                        } else if (selectedOutput.equals("New config file ...")) {
+                        } else if ((comboOutput.getItemCount()>0) && (selectedOutput.equals(Messages.getString("Main.btnNewButton.text")))) {
                                 new NewConfig();
-                                comboOutput.setSelectedItem("Plain text");
-                        } else if (selectedOutput.equals("Plain text")) {
-                        	configField.setText("<default>");
+                                comboOutput.setSelectedItem(Messages.getString("Main.textField.text"));
+                        } else if ((comboOutput.getItemCount()>0) && (selectedOutput.equals("Plain text"))) {
+                        	configField.setText(Messages.getString("Main.textField.text"));
                         }
                         
                     }
@@ -207,7 +202,7 @@ public class Main {
 
                 configField = new JTextField();
                 configField.setEditable(false);
-		configField.setText("<default>");
+		configField.setText(Messages.getString("Main.textField.text"));
 		configField.setBounds(30, 170, 119, 20);
                 configField.setColumns(10);
 		panel.add(configField);
@@ -510,7 +505,13 @@ public class Main {
 				Messages.changeBundle();
 				Messages.fire();
                                 // Ovo ne bi trebalo ic tu ali iz nekog razloga mora;
+                                configField.setText(Messages.getString("Main.textField.text"));
+                                comboOutput.removeAllItems();
+                                comboOutput.addItem(Messages.getString("Main.btnPlainText.text"));
+                                comboOutput.addItem(Messages.getString("Main.btnFindConfigFile.text"));
+                                comboOutput.addItem(Messages.getString("Main.btnNewButton.text"));
                                 statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
+                                
 			}
 		});
 		buttonGroup.add(rdbtnmntmCroatian);
@@ -524,7 +525,13 @@ public class Main {
 				Messages.changeBundle();
 				Messages.fire();
                                 // Ovo ne bi trebalo ic tu ali iz nekog razloga mora;
+                                configField.setText(Messages.getString("Main.textField.text"));
                                 statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
+                                comboOutput.removeAllItems();
+                                comboOutput.addItem(Messages.getString("Main.btnPlainText.text"));
+                                comboOutput.addItem(Messages.getString("Main.btnFindConfigFile.text"));
+                                comboOutput.addItem(Messages.getString("Main.btnNewButton.text"));
+                
 			}
 		});
 		rdbtnmntmEnglish.setSelected(true);
