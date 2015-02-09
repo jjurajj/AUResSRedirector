@@ -33,6 +33,7 @@ import javax.swing.JTextField;
 import java.awt.Font;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 
 import urlReader.UrlHandler;
 import javax.swing.JMenuItem;
@@ -82,36 +83,50 @@ public class Main {
 	private void initialize() {
 		initFiles();
 		frame = new JFrame();
-		frame.setTitle(Messages
-				.getString("Main.frmAudienceResponseSystem.title")); //$NON-NLS-1$
-		frame.setBounds(200, 100, 500, 600);
+		frame.setTitle(Messages.getString("Main.frmAudienceResponseSystem.title")); //$NON-NLS-1$
+		frame.setBounds(200, 100, 300, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		final JPanel panel = new JPanel();
 		frame.getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(null);
 
-		JLabel lblNewLabel = new LocLabel("Main.lblNewLabel.text");
-		lblNewLabel.setText(Messages.getString("Main.lblNewLabel.text_1")); //$NON-NLS-1$
-		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblNewLabel.setBounds(31, 15, 154, 14);
-		panel.add(lblNewLabel);
+                int y_offset = 20;
+                
+		JLabel lblNewLabel_domain = new LocLabel("Main.lblNewLabel.text");
+		lblNewLabel_domain.setText(Messages.getString("Main.lblNewLabel.text")); //$NON-NLS-1$
+		lblNewLabel_domain.setFont(new Font("Tahoma", Font.BOLD, 15));
+		lblNewLabel_domain.setBounds(30, y_offset, 150, 30);
+		panel.add(lblNewLabel_domain);
 
-		final JRadioButton defDomain = new JRadioButton(Messages.getString("Main.rdbtnHttpwwwauressorg.text")); //$NON-NLS-1$
+                domainField = new JTextField();
+		domainField.setBounds(110, y_offset + 4, 140, 25);
+		domainField.setText(Messages.getString("Main.rdbtnHttpwwwauressorg.text"));
+                domainField.setColumns(8);
+		panel.add(domainField);
+		
+                JLabel lblNewLabel_1 = new LocLabel("Main.lblNewLabel_1.text"); //$NON-NLS-1$
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lblNewLabel_1.setBounds(30, y_offset + 30, 315, 30);
+		panel.add(lblNewLabel_1);
+
+		roomField = new JTextField();
+		roomField.setText("");
+		roomField.setBounds(110, y_offset + 34, 35, 25);
+                roomField.setColumns(5);
+		panel.add(roomField);
+		
+                
+		/*final JRadioButton defDomain = new JRadioButton(Messages.getString("Main.rdbtnHttpwwwauressorg.text")); //$NON-NLS-1$
 		defDomain.setBounds(35, 48, 158, 23);
 		buttonGroup_1.add(defDomain);
-		panel.add(defDomain);
+		panel.add(defDomain);*/
 
-		JRadioButton cusDomain = new JRadioButton("");
+		/*JRadioButton cusDomain = new JRadioButton("");
 		buttonGroup_1.add(cusDomain);
 		cusDomain.setBounds(35, 74, 21, 21);
-		panel.add(cusDomain);
+		panel.add(cusDomain);*/
 
-		domainField = new JTextField();
-		domainField.setBounds(55, 74, 193, 20);
-		domainField.setText("");
-		panel.add(domainField);
-		domainField.setColumns(10);
 
 		Scanner s;
 		try {
@@ -124,40 +139,80 @@ public class Main {
                         }
                         
                         // Provjeri je li domena defaultna ili custom zadana
-                        if (domena.equals("http://www.auress.org/") || domena.equals("")) {
+                        /*if (domena.equals("http://www.auress.org/") || domena.equals("")) {
 				defDomain.doClick();
 			} else {
 				cusDomain.doClick();
 				domainField.setText(domena);
-			}
+			}*/
+                        domainField.setText(domena);
+                        
 			s.close();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
-		JLabel lblNewLabel_1 = new LocLabel("Main.lblNewLabel_1.text"); //$NON-NLS-1$
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblNewLabel_1.setBounds(328, 15, 84, 23);
-		panel.add(lblNewLabel_1);
-
-		roomField = new JTextField();
-		roomField.setText("");
-		roomField.setBounds(328, 49, 86, 20);
-		panel.add(roomField);
-		roomField.setColumns(10);
-
 		JSeparator separator = new JSeparator();
-		separator.setBounds(10, 129, 464, 2);
+		separator.setBounds(10, y_offset + 75, 260, 2);
 		panel.add(separator);
 
-		JLabel label = new LocLabel("Main.label.text"); //$NON-NLS-1$
+                JLabel label = new LocLabel("Main.label.text"); //$NON-NLS-1$
 		label.setFont(new Font("Tahoma", Font.BOLD, 14));
-		label.setBounds(31, 159, 118, 14);
+		label.setBounds(30, 110, 118, 20);
 		panel.add(label);
+                
+                String[] output = new String[] { "Plain text", "Custom config file ...", "New config file ..."};
+                final JComboBox<String> comboOutput = new JComboBox<String>(output);
+                comboOutput.setBounds(30, 150, 118, 20);
+                panel.add(comboOutput);
+                
+                comboOutput.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+                        JComboBox<String> combo = (JComboBox<String>) event.getSource();
+                        String selectedOutput = (String) combo.getSelectedItem();
+ 
+                        if (selectedOutput.equals("Custom config file ...")) {
+                              final JFileChooser fc = new JFileChooser();
+				int returnVal = fc.showOpenDialog(frame);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					File file = fc.getSelectedFile();
+					try {
+						Scanner sc = new Scanner(file);
+						PrintWriter pw = new PrintWriter("tempConfig.txt");
+						while (sc.hasNextLine()) {
+							pw.write(sc.nextLine()
+									+ System.getProperty("line.separator"));
+						}
+						sc.close();
+						pw.close();
+						String[] arr = file.toString().split("\\\\");
+						configField.setText(arr[arr.length - 1]);
+						//configFile.doClick();
+					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					};}
+                        } else if (selectedOutput.equals("New config file ...")) {
+                                new NewConfig();
+                                comboOutput.setSelectedItem("Plain text");
+                        } else if (selectedOutput.equals("Plain text")) {
+                        	configField.setText("<default>");
+                        }
+                        
+                    }
+                });
 
-		final JRadioButton plainText = new LocRadioButton(
-				"Main.rdbtnPlainText.text"); //$NON-NLS-1$
+                configField = new JTextField();
+                configField.setEditable(false);
+		configField.setText("<default>");
+		configField.setBounds(30, 170, 119, 20);
+                configField.setColumns(10);
+		panel.add(configField);
+                
+                /*
+		final JRadioButton plainText = new LocRadioButton("Main.rdbtnPlainText.text"); //$NON-NLS-1$
 		plainText.setSelected(true);
 		buttonGroup_2.add(plainText);
 		plainText.setBounds(35, 200, 109, 23);
@@ -166,14 +221,9 @@ public class Main {
 		final JRadioButton configFile = new JRadioButton("");
 		buttonGroup_2.add(configFile);
 		configFile.setBounds(35, 226, 21, 23);
-		panel.add(configFile);
+		panel.add(configFile);*/
 
-		configField = new JTextField();
-		configField.setText("");
-		configField.setBounds(55, 230, 130, 20);
-		panel.add(configField);
-		configField.setColumns(10);
-
+                /*
 		JButton btnFindConfigFile = new LocButton("Main.btnFindConfigFile.text"); //$NON-NLS-1$
 		btnFindConfigFile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -210,25 +260,25 @@ public class Main {
 			}
 		});
 		btnNewButton.setBounds(84, 288, 175, 23);
-		panel.add(btnNewButton);
+		panel.add(btnNewButton);*/
 
 		final JCheckBox userId = new LocCheckBox("Main.chckbxSenderId.text"); //$NON-NLS-1$
 		userId.setSelected(true);
-		userId.setBounds(328, 200, 97, 23);
+		userId.setBounds(180, 148, 97, 23);
 		panel.add(userId);
 
 		final JCheckBox message = new LocCheckBox("Main.chckbxMessage.text"); //$NON-NLS-1$
 		message.setSelected(true);
-		message.setBounds(328, 226, 97, 23);
+		message.setBounds(180, 168, 97, 23);
 		panel.add(message);
 
 		JSeparator separator_1 = new JSeparator();
-		separator_1.setBounds(10, 337, 464, 2);
+		separator_1.setBounds(10, y_offset + 200 , 260, 2);
 		panel.add(separator_1);
 
 		JLabel lblInputControl = new LocLabel("Main.lblInputControl.text"); //$NON-NLS-1$
 		lblInputControl.setFont(new Font("Tahoma", Font.BOLD, 14));
-		lblInputControl.setBounds(31, 359, 154, 23);
+		lblInputControl.setBounds(30, y_offset + 210, 154, 30);
 		panel.add(lblInputControl);
 
 		ActionListener al = new ActionListener() {
@@ -248,11 +298,13 @@ public class Main {
 					return;
 				}
 				String domena = null;
-				if (defDomain.isSelected()) {
+				
+                                /*if (defDomain.isSelected()) {
 					domena = "http://www.auress.org/";
 				} else {
 					domena = domainField.getText();
-				}
+				}*/
+                                domena = domainField.getText();
 				boolean pisi = false;
 				
                                 try {
@@ -280,11 +332,11 @@ public class Main {
                                 if (pisi)
 					pw.write(domena);
 				String nl = System.getProperty("line.separator");
-				if (plainText.isSelected()) {
+				/*if (plainText.isSelected()) {
 					pw.write(nl + "Plain");
 				} else {
 					pw.write(nl + "Config");
-				}
+				}*/
 				if (userId.isSelected()) {
 					pw.write(nl + "UserId");
 				} else {
@@ -342,11 +394,12 @@ public class Main {
 					e1.printStackTrace();
 				}
 				String domena = null;
-				if (defDomain.isSelected()) {
+				/*if (defDomain.isSelected()) {
 					domena = "http://www.auress.org/";
 				} else {
 					domena = domainField.getText();
-				}
+				}*/
+                                domena = domainField.getText();
 				boolean pisi = false;
 				try {
 					if (!domena.startsWith("http://"))
@@ -371,11 +424,11 @@ public class Main {
 				if (pisi)
 					pw.write(domena);
 				String nl = System.getProperty("line.separator");
-				if (plainText.isSelected()) {
+				/*if (plainText.isSelected()) {
 					pw.write(nl + "Plain");
 				} else {
 					pw.write(nl + "Config");
-				}
+				}*/
 				if (userId.isSelected()) {
 					pw.write(nl + "UserId");
 				} else {
@@ -406,7 +459,7 @@ public class Main {
 
 		JButton btnStart = new LocButton("Main.btnStart.text"); //$NON-NLS-1$
 		btnStart.addActionListener(al);
-		btnStart.setBounds(35, 414, 89, 23);
+		btnStart.setBounds(35, y_offset + 250, 89, 23);
 		panel.add(btnStart);
 
 		btnStop = new LocButton("Main.btnStop.text"); //$NON-NLS-1$
@@ -419,20 +472,22 @@ public class Main {
 						.getString("Main.lblToInitiate.text"));
 			}
 		});
-		btnStop.setBounds(173, 414, 89, 23);
+		btnStop.setBounds(150, y_offset + 250, 89, 23);
 		panel.add(btnStop);
 
 		JButton btnResend = new LocButton("Main.btnResend.text"); //$NON-NLS-1$
-		btnResend.setBounds(308, 414, 143, 23);
+		btnResend.setBounds(85, y_offset + 290, 100, 25);
 		btnResend.addActionListener(al1);
 		panel.add(btnResend);
 
 		JSeparator separator_2 = new JSeparator();
-		separator_2.setBounds(10, 459, 464, 2);
+		separator_2.setBounds(10, y_offset + 340, 260, 2);
 		panel.add(separator_2);
 
-		statusLabel = new LocLabel("Main.lblToInitiate.text"); //$NON-NLS-1$
-		statusLabel.setBounds(64, 490, 360, 14);
+		statusLabel = new JLabel(); //$NON-NLS-1$
+                statusLabel.setFont(new Font("Tahoma", 2, 12));
+                statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
+		statusLabel.setBounds(30, y_offset + 360, 260, 30);
 		panel.add(statusLabel);
 
 		JMenuBar menuBar = new JMenuBar();
