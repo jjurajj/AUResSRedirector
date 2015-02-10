@@ -5,7 +5,6 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 
 import javax.swing.Box;
 import javax.swing.JFileChooser;
@@ -28,14 +27,10 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Scanner;
-import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import java.awt.Font;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.ComboBoxModel;
+import java.io.InputStream;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -178,8 +173,7 @@ public class Main {
 						Scanner sc = new Scanner(file);
 						PrintWriter pw = new PrintWriter("tempConfig.txt");
 						while (sc.hasNextLine()) {
-							pw.write(sc.nextLine()
-									+ System.getProperty("line.separator"));
+							pw.write(sc.nextLine() + System.getProperty("line.separator"));
 						}
 						sc.close();
 						pw.close();
@@ -187,12 +181,15 @@ public class Main {
 						configField.setText(arr[arr.length - 1]);
 						//configFile.doClick();
 					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
-					};}
+					}
+                                        ;
+                                } else if (returnVal == JFileChooser.CANCEL_OPTION) { //Ako je kliknuo cancel onda vrati na plain text
+                                    comboOutput.setSelectedItem(Messages.getString("Main.btnPlainText.text"));                                    
+                                }
                         } else if ((comboOutput.getItemCount()>0) && (selectedOutput.equals(Messages.getString("Main.btnNewButton.text")))) {
-                                new NewConfig();
-                                comboOutput.setSelectedItem(Messages.getString("Main.textField.text"));
+                                comboOutput.setSelectedItem(Messages.getString("Main.btnPlainText.text"));                                    
+                                new NewConfig();                                
                         } else if ((comboOutput.getItemCount()>0) && (selectedOutput.equals("Plain text"))) {
                         	configField.setText(Messages.getString("Main.textField.text"));
                         }
@@ -286,25 +283,16 @@ public class Main {
                                         String labela = Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2");
                                         statusLabel.setText(labela);
 					broj--;
-					if (broj == 0) {
+					if (broj == -1) {
 						timer.stop();
 						broj = 10;
-						statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
-                                                //statusLabel.setText(Messages.getString("Main.statusLabel3"));
+						statusLabel.setText(Messages.getString("Main.statusLabel3"));
 						urlThread.start();
 					}
 					return;
 				}
-				String domena = null;
-				
-                                /*if (defDomain.isSelected()) {
-					domena = "http://www.auress.org/";
-				} else {
-					domena = domainField.getText();
-				}*/
-                                domena = domainField.getText();
+				String domena = domainField.getText();
 				boolean pisi = false;
-				
                                 try {
 					if (!domena.startsWith("http://"))
 						domena = "http://" + domena;
@@ -313,28 +301,27 @@ public class Main {
 					URL proba = new URL(domena);
 					pisi = true;
 				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					JOptionPane.showMessageDialog(null,
-							Messages.getString("Main.urlError"));
-					return;
+					JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
+					//return;
 				}
 				
                                 PrintWriter pw = null;
 				try {
 					pw = new PrintWriter("settings.txt");
 				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(null,Messages.getString("Main.settingsError"));
+					//return;
 				}
 				
-                                if (pisi)
-					pw.write(domena);
+                                if (pisi) {pw.write(domena);}
 				String nl = System.getProperty("line.separator");
-				/*if (plainText.isSelected()) {
+                                
+				if (comboOutput.getSelectedItem().equals("Plain text")) {
 					pw.write(nl + "Plain");
 				} else {
 					pw.write(nl + "Config");
-				}*/
+				}
+                                
 				if (userId.isSelected()) {
 					pw.write(nl + "UserId");
 				} else {
@@ -349,14 +336,25 @@ public class Main {
                                 
 
 				String soba = roomField.getText();
-				try {
+                                if ((soba.length() ==4) && (soba.substring(0, 1).matches("[0-9]")) && (soba.substring(1, 2).matches("[0-9]")) && (soba.substring(2, 3).matches("[0-9]")) && (soba.substring(3, 4).matches("[0-9]"))) {
+                                    try {
 					URL myUrl = new URL(domena + soba + "/zadnjiOdgovor.txt");
-					urlThread = new Thread(new UrlHandler(myUrl));
+                                        urlThread = new Thread(new UrlHandler(myUrl));
+					try {
+                                            InputStream input = myUrl.openStream();
+                                        } catch (IOException ex) {
+                                            JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
+                                        }
 					timer.start();
 					timer.setActionCommand("TimerCommand");
-				} catch (MalformedURLException e2) {
-					JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-				}
+                                    } catch (MalformedURLException e2) {
+    					JOptionPane.showMessageDialog(null,Messages.getString("Main.domainError"));
+                                    }
+                                } else {
+                                    JOptionPane.showMessageDialog(null,Messages.getString("Main.roomError"));
+                                }
+				
+                                
 			}
 		};
 
@@ -380,24 +378,17 @@ public class Main {
 					PrintWriter pw = new PrintWriter("newMessage.txt");
 					pw.close();
 				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+						e1.printStackTrace();
 				}
 				try {
 					PrintWriter pw = new PrintWriter("oldMessage.txt");
 					pw.close();
 				} catch (FileNotFoundException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				String domena = null;
-				/*if (defDomain.isSelected()) {
-					domena = "http://www.auress.org/";
-				} else {
-					domena = domainField.getText();
-				}*/
-                                domena = domainField.getText();
+				String domena =  domainField.getText();
 				boolean pisi = false;
+                                
 				try {
 					if (!domena.startsWith("http://"))
 						domena = "http://" + domena;
@@ -407,9 +398,8 @@ public class Main {
 					pisi = true;
 				} catch (MalformedURLException e) {
 					// TODO Auto-generated catch block
-					JOptionPane.showMessageDialog(null,
-							Messages.getString("Main.urlError"));
-					return;
+					JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
+					//return;
 				}
 				PrintWriter pw = null;
 				try {
@@ -421,11 +411,11 @@ public class Main {
 				if (pisi)
 					pw.write(domena);
 				String nl = System.getProperty("line.separator");
-				/*if (plainText.isSelected()) {
+				if (comboOutput.getSelectedItem().equals("Plain text")) {
 					pw.write(nl + "Plain");
 				} else {
 					pw.write(nl + "Config");
-				}*/
+				}
 				if (userId.isSelected()) {
 					pw.write(nl + "UserId");
 				} else {
@@ -445,8 +435,7 @@ public class Main {
 					timer1.start();
 					timer1.setActionCommand("TimerCommand");
 				} catch (MalformedURLException e2) {
-					JOptionPane.showMessageDialog(null,
-							Messages.getString("Main.urlError"));
+					JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
 				}
 			}
 		};
