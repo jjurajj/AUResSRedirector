@@ -31,6 +31,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import java.awt.Font;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -80,6 +82,13 @@ public class Main {
 	/**
 	 * Initialize the contents of the frame.
 	 */
+        
+        private enum Actions {
+            START,
+            STOP,
+            RESEND
+        }
+        
 	private void initialize() {
 		initFiles();
 		frame = new JFrame();
@@ -204,57 +213,6 @@ public class Main {
                 configField.setColumns(10);
 		panel.add(configField);
                 
-                /*
-		final JRadioButton plainText = new LocRadioButton("Main.rdbtnPlainText.text"); //$NON-NLS-1$
-		plainText.setSelected(true);
-		buttonGroup_2.add(plainText);
-		plainText.setBounds(35, 200, 109, 23);
-		panel.add(plainText);
-
-		final JRadioButton configFile = new JRadioButton("");
-		buttonGroup_2.add(configFile);
-		configFile.setBounds(35, 226, 21, 23);
-		panel.add(configFile);*/
-
-                /*
-		JButton btnFindConfigFile = new LocButton("Main.btnFindConfigFile.text"); //$NON-NLS-1$
-		btnFindConfigFile.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				final JFileChooser fc = new JFileChooser();
-				int returnVal = fc.showOpenDialog(frame);
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					File file = fc.getSelectedFile();
-					try {
-						Scanner sc = new Scanner(file);
-						PrintWriter pw = new PrintWriter("tempConfig.txt");
-						while (sc.hasNextLine()) {
-							pw.write(sc.nextLine()
-									+ System.getProperty("line.separator"));
-						}
-						sc.close();
-						pw.close();
-						String[] arr = file.toString().split("\\\\");
-						configField.setText(arr[arr.length - 1]);
-						configFile.doClick();
-					} catch (FileNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-		btnFindConfigFile.setBounds(84, 260, 175, 23);
-		panel.add(btnFindConfigFile);
-
-		JButton btnNewButton = new LocButton("Main.btnNewButton.text"); //$NON-NLS-1$
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				new NewConfig();
-			}
-		});
-		btnNewButton.setBounds(84, 288, 175, 23);
-		panel.add(btnNewButton);*/
-
 		final JCheckBox userId = new LocCheckBox("Main.chckbxSenderId.text"); //$NON-NLS-1$
 		userId.setSelected(true);
 		userId.setBounds(180, 148, 97, 23);
@@ -291,6 +249,7 @@ public class Main {
 					}
 					return;
 				}
+                                
 				String domena = domainField.getText();
 				boolean pisi = false;
                                 try {
@@ -357,7 +316,6 @@ public class Main {
                                 
 			}
 		};
-
 		ActionListener al1 = new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (arg0.getActionCommand().equals("TimerCommand")) {
@@ -440,20 +398,123 @@ public class Main {
 			}
 		};
 
-		timer = new Timer(1000, al);
+                ActionListener al_big = new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (arg0.getActionCommand().equals("TimerCommand")) {
+					
+                                        statusLabel.setText(Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2"));
+					broj--;
+					if (broj == -1) {
+						timer.stop();
+						broj = 10;
+						statusLabel.setText(Messages.getString("Main.statusLabel3"));
+						urlThread.start();
+					}
+					return;
+				}
+				
+				if (arg0.getActionCommand() == Actions.RESEND.name()) {
+					try {
+						PrintWriter pw = new PrintWriter("newMessage.txt");
+						pw.close();
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+					}
+					try {
+						PrintWriter pw = new PrintWriter("oldMessage.txt");
+						pw.close();
+					} catch (FileNotFoundException e1) {
+						e1.printStackTrace();
+					}
+                                }
+				
+				String domena = proofDomain(domainField.getText());
+				boolean pisi = false;
+                                try {
+                                    URL proba = new URL(domena);
+                                    pisi = true;
+				} catch (MalformedURLException e) {
+                                    JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
+                                    return;
+				}
+				
+                                PrintWriter pw = null;
+				try {
+					pw = new PrintWriter("settings.txt");
+				} catch (FileNotFoundException e) {
+					JOptionPane.showMessageDialog(null,Messages.getString("Main.settingsError"));
+					return;
+				}
+				
+                                if (pisi) {pw.write(domena);}
+				String nl = System.getProperty("line.separator");
+                                
+				if (comboOutput.getSelectedItem().equals("Plain text")) {pw.write(nl + "Plain");}
+				else {pw.write(nl + "Config");}
+                                
+				if (userId.isSelected()) {pw.write(nl + "UserId");}
+				else {pw.write(nl + "NoUserId");}
+				
+				if (message.isSelected()) {pw.write(nl + "Message");}
+				else {pw.write(nl + "NoMessage");}
+				pw.close();
+                                
+				String soba = roomField.getText();
+				if (checkRoom(soba)) {
+
+                                    String connect_to = "";
+                                    if (arg0.getActionCommand() == Actions.RESEND.name()) {
+					// dodatno, na resend all treba resendat i stat
+                                        // tu su sve pohranjene poruke
+                                        connect_to = "/studentMessages.txt";
+                                    } else if (arg0.getActionCommand() == Actions.START.name()) {
+                                        // tu je samo jedna, zadnja  poslana poruka
+                                        // tu prvu ne bi trebalo ispisati, to treba podesit u URL handleru
+                                        connect_to = "/zadnjiOdgovor.txt";
+                                    }
+					
+                                    try {
+                                    	URL myUrl = new URL(domena + soba + connect_to);
+					urlThread = new Thread(new UrlHandler(myUrl));
+					try {
+                                        	InputStream input = myUrl.openStream();
+					} catch (IOException ex) {
+						JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
+					}
+					timer.start();
+					timer.setActionCommand("TimerCommand");
+                                    } catch (MalformedURLException e2) {
+					JOptionPane.showMessageDialog(null,Messages.getString("Main.domainError"));
+                                    }
+				
+				} else {
+					JOptionPane.showMessageDialog(null,Messages.getString("Main.roomError"));
+                                }
+					
+                            }
+                };
+		
+		//timer = new Timer(1000, al);
+                timer = new Timer(1000, al_big);
 		timer1 = new Timer(1000, al1);
 
+                //http://stackoverflow.com/questions/5936261/how-to-add-action-listener-that-listens-to-multiple-buttons
+                
 		JButton btnStart = new LocButton("Main.btnStart.text"); //$NON-NLS-1$
-		btnStart.addActionListener(al);
+		btnStart.setActionCommand(Actions.START.name());
+                btnStart.addActionListener(al_big);
 		btnStart.setBounds(35+5, y_offset + 250, 89, 23);
 		panel.add(btnStart);
 
 		btnStop = new LocButton("Main.btnStop.text"); //$NON-NLS-1$
+                btnStop.setActionCommand(Actions.STOP.name());
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UrlHandler.setGotovo();
-				if (timer.isRunning())
-					timer.stop();
+				if (timer.isRunning()) {
+                                    timer.stop();
+                                    broj = 10;
+                                }
                                 statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
 				
 			}
@@ -462,8 +523,9 @@ public class Main {
 		panel.add(btnStop);
 
 		JButton btnResend = new LocButton("Main.btnResend.text"); //$NON-NLS-1$
-		btnResend.setBounds(85+5, y_offset + 290, 100, 25);
-		btnResend.addActionListener(al1);
+		btnResend.setActionCommand(Actions.RESEND.name());
+                btnResend.setBounds(85+5, y_offset + 290, 100, 25);
+		btnResend.addActionListener(al_big);
 		panel.add(btnResend);
 
 		JSeparator separator_2 = new JSeparator();
@@ -605,4 +667,23 @@ public class Main {
 			e.printStackTrace();
 		}
 	}
+        
+        public boolean checkRoom(String soba) {
+        
+            if ((soba.length()==4) && (soba.substring(0, 1).matches("[0-9]")) && (soba.substring(1, 2).matches("[0-9]")) && (soba.substring(2, 3).matches("[0-9]")) && (soba.substring(3, 4).matches("[0-9]"))) {
+                return true;
+            } else {
+                return false;
+            }
+            
+        }
+        
+        public String proofDomain(String domena) {
+        
+            if (!domena.startsWith("http://"))
+                domena = "http://" + domena;
+            if (!domena.endsWith("/"))
+                domena = domena + "/";
+            return domena;
+        }
 }
