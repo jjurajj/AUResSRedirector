@@ -51,11 +51,12 @@ public class Main {
 	private JTextField configField;
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
 	private Thread urlThread;
-	private JLabel statusLabel;
+        private JLabel statusLabel;
 	private int broj = 10;
 	private Timer timer;
 	private Timer timer1;
 	private JButton btnStop;
+        UrlResendHandler resender = new UrlResendHandler();
         
 	/**
 	 * Launch the application.
@@ -91,7 +92,8 @@ public class Main {
         }
         
 	private void initialize() {
-                UrlResendHandler resender;
+                //UrlResendHandler resender;
+                //UrlResendHandler resender;
 		initFiles();
 		frame = new JFrame();
 		frame.setTitle(Messages.getString("Main.frmAudienceResponseSystem.title")); //$NON-NLS-1$
@@ -400,8 +402,7 @@ public class Main {
 			}
 		};
 
-                ActionListener al_big;
-            al_big = new ActionListener() {
+                ActionListener al_big = new ActionListener() {
                 public void actionPerformed(ActionEvent arg0) {
                     if (arg0.getActionCommand().equals("TimerCommand")) {
                         
@@ -414,18 +415,17 @@ public class Main {
                             urlThread.start();
                         }
                         return;
-                    } else if (arg0.getActionCommand().equals("ResetTimerCommand")) {
+                    } else if (arg0.getActionCommand().equals("ResendTimerCommand")) {
                         
-                        statusLabel.setText(Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2"));
                         broj--;
-                        if (broj == -1) {
+                        statusLabel.setText(Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2"));
+                        if (broj == 0) {
+                            
                             timer.stop();
                             broj = 10;
-                            //resender.run();
-                            btnStop.doClick();
-
-                            statusLabel.setText(Messages.getString("Main.statusLabel3"));
-                            urlThread.start();
+                            statusLabel.setText(Messages.getString("Main.currentlyResending"));
+                            resender.run();
+                            statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
                         }
                         return;
                     }
@@ -501,6 +501,7 @@ public class Main {
                                 //this.Url = myUrl;
                                 timer.start();
                                 timer.setActionCommand("ResendTimerCommand");
+                                resender = new UrlResendHandler(myUrl);
                                 // Ovo treba pricekat da se izvrsi do kraja pa 
                                 //urlThread = new Thread(new UrlResendHandler(myUrl));
                             } else if (arg0.getActionCommand() == Actions.START.name()) {
@@ -712,13 +713,4 @@ public class Main {
             return domena;
         }
 
-    public String getUrl() {
-        return Url;
-    }
-
-    public void setUrl(String Url) {
-        this.Url = Url;
-    }
-        
-        
 }

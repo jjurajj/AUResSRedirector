@@ -30,6 +30,12 @@ public class UrlResendHandler {
 		gotovo = false;
 	}
 
+        public UrlResendHandler() {
+		this.myUrl = null;
+		gotovo = false;
+	}
+
+        
 	public static void setGotovo() {
 		gotovo = true;
 	}
@@ -92,10 +98,14 @@ public class UrlResendHandler {
 							Messages.getString("UrlHandler.errorMsg"));
 					t.cancel();
 				}
-                                setGotovo();
+                                
 			}
 		};
-		t.schedule(task, 0l, 999l);
-	}
+                t.schedule(task, 0l, 999l);
+                setGotovo();
+	//return true;
+        }
+        
+        
 
 }
