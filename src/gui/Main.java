@@ -39,6 +39,7 @@ import javax.swing.JComboBox;
 
 import urlReader.UrlHandler;
 import javax.swing.JMenuItem;
+import urlReader.UrlResendHandler;
 
 public class Main {
 
@@ -55,7 +56,7 @@ public class Main {
 	private Timer timer;
 	private Timer timer1;
 	private JButton btnStop;
-
+        
 	/**
 	 * Launch the application.
 	 */
@@ -90,6 +91,7 @@ public class Main {
         }
         
 	private void initialize() {
+                UrlResendHandler resender;
 		initFiles();
 		frame = new JFrame();
 		frame.setTitle(Messages.getString("Main.frmAudienceResponseSystem.title")); //$NON-NLS-1$
@@ -398,101 +400,124 @@ public class Main {
 			}
 		};
 
-                ActionListener al_big = new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (arg0.getActionCommand().equals("TimerCommand")) {
-					
-                                        statusLabel.setText(Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2"));
-					broj--;
-					if (broj == -1) {
-						timer.stop();
-						broj = 10;
-						statusLabel.setText(Messages.getString("Main.statusLabel3"));
-						urlThread.start();
-					}
-					return;
-				}
-				
-				if (arg0.getActionCommand() == Actions.RESEND.name()) {
-					try {
-						PrintWriter pw = new PrintWriter("newMessage.txt");
-						pw.close();
-					} catch (FileNotFoundException e1) {
-						e1.printStackTrace();
-					}
-					try {
-						PrintWriter pw = new PrintWriter("oldMessage.txt");
-						pw.close();
-					} catch (FileNotFoundException e1) {
-						e1.printStackTrace();
-					}
-                                }
-				
-				String domena = proofDomain(domainField.getText());
-				boolean pisi = false;
-                                try {
-                                    URL proba = new URL(domena);
-                                    pisi = true;
-				} catch (MalformedURLException e) {
-                                    JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-                                    return;
-				}
-				
-                                PrintWriter pw = null;
-				try {
-					pw = new PrintWriter("settings.txt");
-				} catch (FileNotFoundException e) {
-					JOptionPane.showMessageDialog(null,Messages.getString("Main.settingsError"));
-					return;
-				}
-				
-                                if (pisi) {pw.write(domena);}
-				String nl = System.getProperty("line.separator");
-                                
-				if (comboOutput.getSelectedItem().equals("Plain text")) {pw.write(nl + "Plain");}
-				else {pw.write(nl + "Config");}
-                                
-				if (userId.isSelected()) {pw.write(nl + "UserId");}
-				else {pw.write(nl + "NoUserId");}
-				
-				if (message.isSelected()) {pw.write(nl + "Message");}
-				else {pw.write(nl + "NoMessage");}
-				pw.close();
-                                
-				String soba = roomField.getText();
-				if (checkRoom(soba)) {
+                ActionListener al_big;
+            al_big = new ActionListener() {
+                public void actionPerformed(ActionEvent arg0) {
+                    if (arg0.getActionCommand().equals("TimerCommand")) {
+                        
+                        statusLabel.setText(Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2"));
+                        broj--;
+                        if (broj == -1) {
+                            timer.stop();
+                            broj = 10;
+                            statusLabel.setText(Messages.getString("Main.statusLabel3"));
+                            urlThread.start();
+                        }
+                        return;
+                    } else if (arg0.getActionCommand().equals("ResetTimerCommand")) {
+                        
+                        statusLabel.setText(Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2"));
+                        broj--;
+                        if (broj == -1) {
+                            timer.stop();
+                            broj = 10;
+                            //resender.run();
+                            btnStop.doClick();
 
-                                    String connect_to = "";
-                                    if (arg0.getActionCommand() == Actions.RESEND.name()) {
-					// dodatno, na resend all treba resendat i stat
-                                        // tu su sve pohranjene poruke
-                                        connect_to = "/studentMessages.txt";
-                                    } else if (arg0.getActionCommand() == Actions.START.name()) {
-                                        // tu je samo jedna, zadnja  poslana poruka
-                                        // tu prvu ne bi trebalo ispisati, to treba podesit u URL handleru
-                                        connect_to = "/zadnjiOdgovor.txt";
-                                    }
-					
-                                    try {
-                                    	URL myUrl = new URL(domena + soba + connect_to);
-					urlThread = new Thread(new UrlHandler(myUrl));
-					try {
-                                        	InputStream input = myUrl.openStream();
-					} catch (IOException ex) {
-						JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-					}
-					timer.start();
-					timer.setActionCommand("TimerCommand");
-                                    } catch (MalformedURLException e2) {
-					JOptionPane.showMessageDialog(null,Messages.getString("Main.domainError"));
-                                    }
-				
-				} else {
-					JOptionPane.showMessageDialog(null,Messages.getString("Main.roomError"));
-                                }
-					
+                            statusLabel.setText(Messages.getString("Main.statusLabel3"));
+                            urlThread.start();
+                        }
+                        return;
+                    }
+                    
+                    if (arg0.getActionCommand() == Actions.RESEND.name()) {
+                        try {
+                            PrintWriter pw = new PrintWriter("newMessage.txt");
+                            pw.close();
+                        } catch (FileNotFoundException e1) {
+                            e1.printStackTrace();
+                        }
+                        try {
+                            PrintWriter pw = new PrintWriter("oldMessage.txt");
+                            pw.close();
+                        } catch (FileNotFoundException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                    
+                    String domena = proofDomain(domainField.getText());
+                    boolean pisi = false;
+                    try {
+                        URL proba = new URL(domena);
+                        pisi = true;
+                    } catch (MalformedURLException e) {
+                        JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
+                        return;
+                    }
+                    
+                    PrintWriter pw = null;
+                    try {
+                        pw = new PrintWriter("settings.txt");
+                    } catch (FileNotFoundException e) {
+                        JOptionPane.showMessageDialog(null,Messages.getString("Main.settingsError"));
+                        return;
+                    }
+                    
+                    if (pisi) {pw.write(domena);}
+                    String nl = System.getProperty("line.separator");
+                    
+                    if (comboOutput.getSelectedItem().equals("Plain text")) {pw.write(nl + "Plain");}
+                    else {pw.write(nl + "Config");}
+                    
+                    if (userId.isSelected()) {pw.write(nl + "UserId");}
+                    else {pw.write(nl + "NoUserId");}
+                    
+                    if (message.isSelected()) {pw.write(nl + "Message");}
+                    else {pw.write(nl + "NoMessage");}
+                    pw.close();
+                    
+                    String soba = roomField.getText();
+                    if (checkRoom(soba)) {
+                        
+                        String connect_to = "";
+                        if (arg0.getActionCommand() == Actions.RESEND.name()) {
+                            // dodatno, na resend all treba resendat i stat
+                            // tu su sve pohranjene poruke
+                            connect_to = "/studentMessages.txt";
+                        } else if (arg0.getActionCommand() == Actions.START.name()) {
+                            // tu je samo jedna, zadnja  poslana poruka
+                            // tu prvu ne bi trebalo ispisati, to treba podesit u URL handleru
+                            connect_to = "/zadnjiOdgovor.txt";
+                        }
+                        
+                        try {
+                            URL myUrl = new URL(domena + soba + connect_to);
+                            try {
+                                InputStream input = myUrl.openStream();
+                            } catch (IOException ex) {
+                                JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
                             }
-                };
+                            if (arg0.getActionCommand() == Actions.RESEND.name()) {
+                                //this.Url = myUrl;
+                                timer.start();
+                                timer.setActionCommand("ResendTimerCommand");
+                                // Ovo treba pricekat da se izvrsi do kraja pa 
+                                //urlThread = new Thread(new UrlResendHandler(myUrl));
+                            } else if (arg0.getActionCommand() == Actions.START.name()) {
+                                urlThread = new Thread(new UrlHandler(myUrl));
+                                timer.start();
+                                timer.setActionCommand("TimerCommand");                                
+                            }
+                        } catch (MalformedURLException e2) {
+                            JOptionPane.showMessageDialog(null,Messages.getString("Main.domainError"));
+                        }
+                        
+                    } else {
+                        JOptionPane.showMessageDialog(null,Messages.getString("Main.roomError"));
+                    }
+                    
+                }
+            };
 		
 		//timer = new Timer(1000, al);
                 timer = new Timer(1000, al_big);
@@ -686,4 +711,14 @@ public class Main {
                 domena = domena + "/";
             return domena;
         }
+
+    public String getUrl() {
+        return Url;
+    }
+
+    public void setUrl(String Url) {
+        this.Url = Url;
+    }
+        
+        
 }
