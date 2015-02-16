@@ -1,4 +1,4 @@
 http://www.auress.org/
-Plain
+Config
 UserId
 Message
