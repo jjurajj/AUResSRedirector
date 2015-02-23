@@ -83,8 +83,24 @@ public class UrlResendHandler {
 								break;
 							}
 						}
-					if (!isti)
-						rob.write(listaNovih);
+					if (!isti) {
+                                            // Ovo tu je umjereni parser za umetanje oznaka IDja i poruka
+                                            // Trebalo bi dodat nesto na web jer tu vise ne mogu skuzit stzo je poruka
+                                            ArrayList<String> temp = new ArrayList<>();
+                                            boolean skip = false;
+                                            for (int i=0; i<listaNovih.size(); i++) {
+                                                String line = listaNovih.get(i);
+                                                if ((line.indexOf(": ")>0) && (line.indexOf(": ") == line.indexOf(":")) ){
+                                                    temp.add("ID korisnika: "+line.substring(0, line.indexOf(": ")));
+                                                    temp.add("Poruka: "+line.substring(line.indexOf(": ")+2));
+                                                    skip = true;
+                                                } else {
+                                                    skip = false;
+                                                    temp.add(line);
+                                                }
+                                            }
+                                            rob.write(temp);
+				        }
 					Scanner sc = new Scanner(Paths.get("newMessage.txt"));
 					PrintWriter pw2 = new PrintWriter("oldMessage.txt");
 					while (sc.hasNextLine()) {

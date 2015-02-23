@@ -29,7 +29,7 @@ public class TheRobot implements ClipboardOwner {
 	public void write(List<String> l) {
 		try {
 			Robot robot = new Robot();
-			robot.delay(3000); // maknuti na kraju ovo je samo za debug
+			//robot.delay(3000); // maknuti na kraju ovo je samo za debug
 
 			// inicijalizacija settingsa
 			List<String> settings = Files.readAllLines(
@@ -82,15 +82,16 @@ public class TheRobot implements ClipboardOwner {
 			// idem po listi redaka koje trebam ispisati l
 			for (int j = 0; j < l.size(); j++) {
 				String i = l.get(j);
-				// ako pocinje sa ID znaci u novom sam bloku
+				int delay = 100;
+                                // ako pocinje sa ID znaci u novom sam bloku
 				if (i.startsWith("ID korisnika: ")) {
 					if (beforeblock != null) {
 						type(robot, beforeblock);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (beforeid != null) {
 						type(robot, beforeid);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (userid) {
 						i = i.split(": ")[1];
@@ -104,17 +105,17 @@ public class TheRobot implements ClipboardOwner {
 						robot.keyPress(KeyEvent.VK_V);
 						robot.keyRelease(KeyEvent.VK_V);
 						robot.keyRelease(KeyEvent.VK_CONTROL);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (afterid != null) {
 						type(robot, afterid);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (j == l.size() - 1) { // zadnji je pa onda ispisi
 						// sekvencu afterblock
 						if (afterblock != null) {
 							type(robot, afterblock);
-							robot.delay(400);
+							robot.delay(delay);
 						}
 					} else { // ocito nije zadnji pa se sekvenca afterblock
 								// ispisuje jedino ako je sljedeca nova poruka
@@ -122,14 +123,14 @@ public class TheRobot implements ClipboardOwner {
 						if (sljed.contains("ID korisnika")
 								&& afterblock != null) {
 							type(robot, afterblock);
-							robot.delay(400);
+							robot.delay(delay);
 						}
 					}
 				} else if (i.startsWith("Poruka: ")) {
 					// ako pocinje s Poruka onda sam u prvom retku poruke
 					if (beforemessage != null) {
 						type(robot, beforemessage);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (message) {
 						i = i.split(": ")[1];
@@ -143,17 +144,17 @@ public class TheRobot implements ClipboardOwner {
 						robot.keyPress(KeyEvent.VK_V);
 						robot.keyRelease(KeyEvent.VK_V);
 						robot.keyRelease(KeyEvent.VK_CONTROL);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (aftermessage != null) {
 						type(robot, aftermessage);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (j == l.size() - 1) { // zadnji je pa onda ispisi
 						// sekvencu afterblock
 						if (afterblock != null) {
 							type(robot, afterblock);
-							robot.delay(400);
+							robot.delay(delay);
 						}
 					} else { // ocito nije zadnji pa se sekvenca afterblock
 								// ispisuje jedino ako je sljedeca nova poruka
@@ -161,14 +162,14 @@ public class TheRobot implements ClipboardOwner {
 						if (sljed.contains("ID korisnika")
 								&& afterblock != null) {
 							type(robot, afterblock);
-							robot.delay(400);
+							robot.delay(delay);
 						}
 					}
 				} else {
 					// inace sam u nekom ne-prvom retku poruke
 					if (beforeline) {
 						type(robot, beforemessage);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (message) {
 						i += System.getProperty("line.separator");
@@ -179,17 +180,17 @@ public class TheRobot implements ClipboardOwner {
 						robot.keyPress(KeyEvent.VK_V);
 						robot.keyRelease(KeyEvent.VK_V);
 						robot.keyRelease(KeyEvent.VK_CONTROL);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (afterline) {
 						type(robot, aftermessage);
-						robot.delay(400);
+						robot.delay(delay);
 					}
 					if (j == l.size() - 1) { // zadnji je pa onda ispisi
 												// sekvencu afterblock
 						if (afterblock != null) {
 							type(robot, afterblock);
-							robot.delay(400);
+							robot.delay(delay);
 						}
 					} else { // ocito nije zadnji pa se sekvenca afterblock
 								// ispisuje jedino ako je sljedeca nova poruka
@@ -197,7 +198,7 @@ public class TheRobot implements ClipboardOwner {
 						if (sljed.contains("ID korisnika")
 								&& afterblock != null) {
 							type(robot, afterblock);
-							robot.delay(400);
+							robot.delay(delay);
 						}
 					}
 				}

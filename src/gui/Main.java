@@ -1,5 +1,6 @@
 package gui;
 
+import static com.sun.org.apache.xalan.internal.lib.ExsltDatetime.time;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -238,291 +239,93 @@ public class Main {
 
                 y_offset = y_offset - 30;
                 
-		ActionListener al = new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (arg0.getActionCommand().equals("TimerCommand")) {
-					
-                                        String labela = Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2");
-                                        statusLabel.setText(labela);
-					broj--;
-					if (broj == -1) {
-						timer.stop();
-						broj = 10;
-						statusLabel.setText(Messages.getString("Main.statusLabel3"));
-						urlThread.start();
-					}
-					return;
-				}
-                                
-				String domena = domainField.getText();
-				boolean pisi = false;
-                                try {
-					if (!domena.startsWith("http://"))
-						domena = "http://" + domena;
-					if (!domena.endsWith("/"))
-						domena = domena + "/";
-					URL proba = new URL(domena);
-					pisi = true;
-				} catch (MalformedURLException e) {
-					JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-					//return;
-				}
-				
-                                PrintWriter pw = null;
-				try {
-					pw = new PrintWriter("settings.txt");
-				} catch (FileNotFoundException e) {
-					JOptionPane.showMessageDialog(null,Messages.getString("Main.settingsError"));
-					//return;
-				}
-				
-                                if (pisi) {pw.write(domena);}
-				String nl = System.getProperty("line.separator");
-                                
-				if (comboOutput.getSelectedItem().equals("Plain text")) {
-					pw.write(nl + "Plain");
-				} else {
-					pw.write(nl + "Config");
-				}
-                                
-				if (userId.isSelected()) {
-					pw.write(nl + "UserId");
-				} else {
-					pw.write(nl + "NoUserId");
-				}
-				if (message.isSelected()) {
-					pw.write(nl + "Message");
-				} else {
-					pw.write(nl + "NoMessage");
-				}
-				pw.close();
-                                
-
-				String soba = roomField.getText();
-                                if ((soba.length() ==4) && (soba.substring(0, 1).matches("[0-9]")) && (soba.substring(1, 2).matches("[0-9]")) && (soba.substring(2, 3).matches("[0-9]")) && (soba.substring(3, 4).matches("[0-9]"))) {
-                                    try {
-					URL myUrl = new URL(domena + soba + "/zadnjiOdgovor.txt");
-                                        urlThread = new Thread(new UrlHandler(myUrl));
-					try {
-                                            InputStream input = myUrl.openStream();
-                                        } catch (IOException ex) {
-                                            JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-                                        }
-					timer.start();
-					timer.setActionCommand("TimerCommand");
-                                    } catch (MalformedURLException e2) {
-    					JOptionPane.showMessageDialog(null,Messages.getString("Main.domainError"));
-                                    }
-                                } else {
-                                    JOptionPane.showMessageDialog(null,Messages.getString("Main.roomError"));
-                                }
-				
-                                
-			}
-		};
-		ActionListener al1 = new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (arg0.getActionCommand().equals("TimerCommand")) {
-					statusLabel.setText(Messages.getString("Main.statusLabel1")
-							+ " " + broj + " "
-							+ Messages.getString("Main.statusLabel2"));
-					broj--;
-					if (broj == 0) {
-						timer1.stop();
-						broj = 10;
-						statusLabel.setText(Messages
-								.getString("Main.statusLabel3"));
-						urlThread.start();
-					}
-					return;
-				}
-				try {
-					PrintWriter pw = new PrintWriter("newMessage.txt");
-					pw.close();
-				} catch (FileNotFoundException e1) {
-						e1.printStackTrace();
-				}
-				try {
-					PrintWriter pw = new PrintWriter("oldMessage.txt");
-					pw.close();
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				String domena =  domainField.getText();
-				boolean pisi = false;
-                                
-				try {
-					if (!domena.startsWith("http://"))
-						domena = "http://" + domena;
-					if (!domena.endsWith("/"))
-						domena = domena + "/";
-					URL proba = new URL(domena);
-					pisi = true;
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-					//return;
-				}
-				PrintWriter pw = null;
-				try {
-					pw = new PrintWriter("settings.txt");
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if (pisi)
-					pw.write(domena);
-				String nl = System.getProperty("line.separator");
-				if (comboOutput.getSelectedItem().equals("Plain text")) {
-					pw.write(nl + "Plain");
-				} else {
-					pw.write(nl + "Config");
-				}
-				if (userId.isSelected()) {
-					pw.write(nl + "UserId");
-				} else {
-					pw.write(nl + "NoUserId");
-				}
-				if (message.isSelected()) {
-					pw.write(nl + "Message");
-				} else {
-					pw.write(nl + "NoMessage");
-				}
-				pw.close();
-
-				String soba = roomField.getText();
-				try {
-					URL myUrl = new URL(domena + soba + "/studentMessages.txt");
-					urlThread = new Thread(new UrlHandler(myUrl));
-					timer1.start();
-					timer1.setActionCommand("TimerCommand");
-				} catch (MalformedURLException e2) {
-					JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-				}
-			}
-		};
-
-                ActionListener al_big = new ActionListener() {
+		ActionListener al_big = new ActionListener() {
                 public void actionPerformed(ActionEvent arg0) {
-                    if (arg0.getActionCommand().equals("TimerCommand")) {
-                        
+                    
+                    String soba = roomField.getText();
+                    String domena = proofDomain(domainField.getText());
+                    
+                    // Ako ne prolazi validacija postavki povezivanja odmah umri
+                    if (!checkRoom(soba) || !check_domain_room(soba, domena))
+                        return;
+                    
+                    if (arg0.getActionCommand().equals("TimerCommand") || (arg0.getActionCommand().equals("ResendTimerCommand"))) {
                         statusLabel.setText(Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2"));
                         broj--;
                         if (broj == -1) {
                             timer.stop();
                             broj = 10;
-                            statusLabel.setText(Messages.getString("Main.statusLabel3"));
-                            urlThread.start();
-                        }
-                        return;
-                    } else if (arg0.getActionCommand().equals("ResendTimerCommand")) {
-                        
-                        broj--;
-                        statusLabel.setText(Messages.getString("Main.statusLabel1")+" "+broj+" "+ Messages.getString("Main.statusLabel2"));
-                        if (broj == 0) {
-                            
-                            timer.stop();
-                            broj = 10;
-                            statusLabel.setText(Messages.getString("Main.currentlyResending"));
-                            resender.run();
-                            statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
+                            if (arg0.getActionCommand().equals("TimerCommand")) {
+                                statusLabel.setText(Messages.getString("Main.statusLabel3"));
+                                urlThread.start();
+                            } else {
+                                statusLabel.setText(Messages.getString("Main.currentlyResending"));
+                                resender.run();
+                                statusLabel.setText(Messages.getString("Main.lblToInitiate.text"));
+                            }
                         }
                         return;
                     }
                     
+                    // Provjeri mogu li se otvorit pomocne txt datoteke i postavi connect_to varijablu
+                    String connect_to = "";
                     if (arg0.getActionCommand() == Actions.RESEND.name()) {
                         try {
                             PrintWriter pw = new PrintWriter("newMessage.txt");
                             pw.close();
-                        } catch (FileNotFoundException e1) {
-                            e1.printStackTrace();
-                        }
-                        try {
-                            PrintWriter pw = new PrintWriter("oldMessage.txt");
+                            pw = new PrintWriter("oldMessage.txt");
                             pw.close();
                         } catch (FileNotFoundException e1) {
                             e1.printStackTrace();
                         }
+                        connect_to = "/studentMessages.txt";
+                    } else {
+                        connect_to = "/zadnjiOdgovor.txt";
                     }
                     
-                    String domena = proofDomain(domainField.getText());
-                    boolean pisi = false;
+                    // Napisi settings.txt datoteku s postavkama outputa
                     try {
-                        URL proba = new URL(domena);
-                        pisi = true;
-                    } catch (MalformedURLException e) {
-                        JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-                        return;
-                    }
-                    
-                    PrintWriter pw = null;
-                    try {
+                        PrintWriter pw = null;
                         pw = new PrintWriter("settings.txt");
+                        pw.write(domena);
+                    
+                        String nl = System.getProperty("line.separator");
+                        if (comboOutput.getSelectedItem().equals(Messages.getString("Main.btnPlainText.text"))) {pw.write(nl + "Plain");}
+                        else {pw.write(nl + "Config");}
+                    
+                        if (userId.isSelected()) {pw.write(nl + "UserId");}
+                        else {pw.write(nl + "NoUserId");}
+                    
+                        if (message.isSelected()) {pw.write(nl + "Message");}
+                        else {pw.write(nl + "NoMessage");}
+                        pw.close();
+                    
                     } catch (FileNotFoundException e) {
                         JOptionPane.showMessageDialog(null,Messages.getString("Main.settingsError"));
                         return;
                     }
                     
-                    if (pisi) {pw.write(domena);}
-                    String nl = System.getProperty("line.separator");
+                    // Spoji se i pocni odbrojavanje
+                    try {
                     
-                    if (comboOutput.getSelectedItem().equals("Plain text")) {pw.write(nl + "Plain");}
-                    else {pw.write(nl + "Config");}
-                    
-                    if (userId.isSelected()) {pw.write(nl + "UserId");}
-                    else {pw.write(nl + "NoUserId");}
-                    
-                    if (message.isSelected()) {pw.write(nl + "Message");}
-                    else {pw.write(nl + "NoMessage");}
-                    pw.close();
-                    
-                    String soba = roomField.getText();
-                    if (checkRoom(soba)) {
-                        
-                        String connect_to = "";
+                        URL myUrl = new URL(domena + soba + connect_to);
+                        InputStream input = myUrl.openStream();
+                        timer.start();
                         if (arg0.getActionCommand() == Actions.RESEND.name()) {
-                            // dodatno, na resend all treba resendat i stat
-                            // tu su sve pohranjene poruke
-                            connect_to = "/studentMessages.txt";
-                        } else if (arg0.getActionCommand() == Actions.START.name()) {
-                            // tu je samo jedna, zadnja  poslana poruka
-                            // tu prvu ne bi trebalo ispisati, to treba podesit u URL handleru
-                            connect_to = "/zadnjiOdgovor.txt";
-                        }
-                        
-                        try {
-                            URL myUrl = new URL(domena + soba + connect_to);
-                            try {
-                                InputStream input = myUrl.openStream();
-                            } catch (IOException ex) {
-                                JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
-                            }
-                            if (arg0.getActionCommand() == Actions.RESEND.name()) {
-                                //this.Url = myUrl;
-                                timer.start();
-                                timer.setActionCommand("ResendTimerCommand");
                                 resender = new UrlResendHandler(myUrl);
-                                // Ovo treba pricekat da se izvrsi do kraja pa 
-                                //urlThread = new Thread(new UrlResendHandler(myUrl));
-                            } else if (arg0.getActionCommand() == Actions.START.name()) {
+                                timer.setActionCommand("ResendTimerCommand");
+                        } else if (arg0.getActionCommand() == Actions.START.name()) {
                                 urlThread = new Thread(new UrlHandler(myUrl));
-                                timer.start();
                                 timer.setActionCommand("TimerCommand");                                
-                            }
-                        } catch (MalformedURLException e2) {
-                            JOptionPane.showMessageDialog(null,Messages.getString("Main.domainError"));
                         }
-                        
-                    } else {
-                        JOptionPane.showMessageDialog(null,Messages.getString("Main.roomError"));
-                    }
-                    
+                    } catch (MalformedURLException e2) {
+                    } catch (IOException ex) {}
                 }
             };
 		
 		//timer = new Timer(1000, al);
                 timer = new Timer(1000, al_big);
-		timer1 = new Timer(1000, al1);
+		//timer1 = new Timer(1000, al1);
 
                 //http://stackoverflow.com/questions/5936261/how-to-add-action-listener-that-listens-to-multiple-buttons
                 
@@ -699,9 +502,28 @@ public class Main {
             if ((soba.length()==4) && (soba.substring(0, 1).matches("[0-9]")) && (soba.substring(1, 2).matches("[0-9]")) && (soba.substring(2, 3).matches("[0-9]")) && (soba.substring(3, 4).matches("[0-9]"))) {
                 return true;
             } else {
+                JOptionPane.showMessageDialog(null,Messages.getString("Main.roomError"));
                 return false;
             }
             
+        }
+        
+        public boolean check_domain_room (String room, String domain) {
+            
+            try {
+                URL myUrl = new URL(domain + room + "/studentMessages.txt");
+                try {
+                    InputStream input = myUrl.openStream();
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
+                    return false;
+                }
+                return true;
+            }
+            catch (MalformedURLException e) {
+                    JOptionPane.showMessageDialog(null,Messages.getString("Main.urlError"));
+                    return false;
+            }
         }
         
         public String proofDomain(String domena) {
